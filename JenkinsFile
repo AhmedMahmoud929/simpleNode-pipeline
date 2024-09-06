@@ -1,0 +1,48 @@
+pipeline {
+     agent any
+     stages {
+          stage('Install dependencies') {
+               steps {
+                    script {
+                         echo 'Installing dependencies phase...'
+                         sh 'npm install'
+                    }
+               }
+          }
+          stage('Test') {
+               steps {
+                    script {
+                         echo 'Testing phase...'
+                         sh 'npm test'
+                    }
+               }
+          }
+          stage('Build') {
+               steps {
+                    script {
+                         echo 'Building application phase...'
+                         sh 'npm build'
+                    }
+               }
+          }
+          stage('Build docker image') {
+               steps {
+                    script {
+                         echo 'Building docker image phase...'
+                         withCredentials([usernamePassword(credentailsId:'docker-hub-credentials', usernameVariable:'USER', passwordVariable:'PASS')]) {
+                              sh 'docker build -t ahmedmahmoud252/node-wiki-app:latest .'
+                              sh "docker login -u ${USER} -p ${PASS}"
+                              sh 'docker push ahmedmahmoud252/node-wiki-app:latest'
+                         }
+                    }
+               }
+          }
+          stage('Deploy') {
+               steps {
+                    script {
+                         echo 'Deployment successfull'
+                    }
+               }
+          }
+     }
+}
